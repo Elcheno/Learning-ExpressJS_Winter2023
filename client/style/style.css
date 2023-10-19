@@ -55,10 +55,6 @@ button{
     overflow-y: scroll;
 }
 
-#messages li{
-
-}
-
 #messages li:nth-child(odd){
     background-color: #a7a7a7;
 }

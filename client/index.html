@@ -10,12 +10,14 @@
         import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
         const socket = io()
 
+        const user = 'user1'
+
         const form = document.querySelector('#form')
         const input = document.querySelector('#input')
         const messages = document.querySelector('#messages');
 
         socket.on('chat message', (msg) => {
-            const item = `<li>${msg}</li>`
+            const item = `<li>${msg.user}: ${msg.message}</li>`
             messages.insertAdjacentHTML('beforeend', item)
         })
 
@@ -23,7 +25,11 @@
             e.preventDefault()
 
             if(input.value){
-                socket.emit('chat message', input.value.trim())
+                socket.emit('chat message', 
+                {
+                    user:user,
+                    message:input.value.trim()
+                })
                 input.value = ''
             }
         })
