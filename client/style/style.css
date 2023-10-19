@@ -1,0 +1,64 @@
+:root{
+    color-scheme: light dark;
+}
+
+html{
+    font-family: Century Gothic;
+}
+
+main{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+section{
+    height: 60vh;
+    width: 15vw;
+    background-color: rgb(237, 237, 255);
+    display: grid;
+    grid-template-rows: auto min-content;
+    border-radius: 10px;
+}
+
+form{
+    align-self: end;
+    margin: 10px 0 20px 0;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    column-gap: 0.3em;
+}
+
+input{
+    border-radius: 10px;
+    padding: 2.5px;
+}
+
+input:focus{
+    outline: 0;
+}
+
+button{
+    background-color: #09f;
+    color: fff;
+    border: 0;
+    border-radius: 5px;
+}
+
+#messages{
+    color: black;
+    list-style-type: none;
+    padding: 0;
+    padding: 0.5rem 1rem;
+    overflow-y: scroll;
+}
+
+#messages li{
+
+}
+
+#messages li:nth-child(odd){
+    background-color: #a7a7a7;
+}
