@@ -6,23 +6,31 @@ html{
     font-family: Century Gothic;
 }
 
+body{
+    margin: 0;
+}
+
 main{
     display: flex;
+    flex-flow: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
+    row-gap: 2em;
 }
 
 section{
-    height: 60vh;
-    width: 15vw;
+    min-height: 60%;
+    min-width: 15%;
+    max-width: 286px;
+    max-height: 648px;
     background-color: rgb(237, 237, 255);
     display: grid;
     grid-template-rows: auto min-content;
     border-radius: 10px;
 }
 
-form{
+#form{
     align-self: end;
     margin: 10px 0 20px 0;
     display: flex;
@@ -31,16 +39,16 @@ form{
     column-gap: 0.3em;
 }
 
-input{
+#input{
     border-radius: 10px;
     padding: 2.5px;
 }
 
-input:focus{
+#input:focus{
     outline: 0;
 }
 
-button{
+#button{
     background-color: #09f;
     color: fff;
     border: 0;

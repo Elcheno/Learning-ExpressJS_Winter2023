@@ -6,30 +6,54 @@
     <link rel="stylesheet" href="./style/style.css">
     <link rel="shortcut icon" href="./src/favicon/favicon.ico" type="image/x-icon">
     <title>ChatPrueba</title>
+
     <script type="module">
         import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
-        // AQUI DEBERIA DE PEDIR AL CLIENTE EL NOMBRE DE USUARIO CON EL QUE CONECTARSE
-        const username = 'user1' // USERNAME DEL CLIENTE
 
-        const socket = io({
-            extraHeaders: {
-                "username": username
-            }
-        });
-
+        const btnUsername = document.querySelector('#setUsername')
+        const formUsername = document.querySelector('#user-form')
+        const inputUsername = document.querySelector('#user-input')
         const form = document.querySelector('#form')
         const input = document.querySelector('#input')
-        const messages = document.querySelector('#messages');
+        const messages = document.querySelector('#messages')
+        const button = document.querySelector('#button')
 
-        socket.on('chat message', (msg) => {
-            const item = `<li>${msg.user}: ${msg.message}</li>`
-            messages.insertAdjacentHTML('beforeend', item)
-        })
+        let socket = io({
+            auth: {
+                    username: 'user',
+                    serverOffset: 0
+                }
+        });
+        let username = null
 
-        form.addEventListener('submit', (e) => {
+        formUsername.addEventListener('submit', (e) => {
             e.preventDefault()
 
-            if(input.value){
+            username = inputUsername.value.trim()
+
+            socket = io({
+                auth: {
+                    username: username,
+                    serverOffset: 0
+                }
+            });
+            btnUsername.disabled = true
+            inputUsername.disabled = true
+            button.disabled = false
+        })
+
+
+
+        socket.on('chat message', (user, message, serverOffset) => {
+            const item = `<li>${user}: ${message}</li>`
+            messages.insertAdjacentHTML('beforeend', item)
+            socket.auth.serverOffset = serverOffset
+        })
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault()
+
+            if(input.value && username != null && socket != null){
                 socket.emit('chat message', 
                 {
                     user:username,
@@ -42,11 +66,15 @@
 </head>
 <body>
     <main>
+        <form id="user-form">
+            <input type="text" id="user-input" placeholder="Type a username" name="username" autocomplete="off">
+            <button id="setUsername" type="submit">SET</button>
+        </form>
         <section>
             <ul id="messages"></ul>
             <form id="form">
                 <input id="input" type="text" placeholder="Type a message" name="message" autocomplete="off">
-                <button type="submit">SEND</button>
+                <button disabled id="button" type="submit">SEND</button>
             </form>
         </section>
     </main>
