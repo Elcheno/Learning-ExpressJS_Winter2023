@@ -10,18 +10,32 @@
 </head>
 
 <body>
-    <main>
-        <form id="user-form">
-            <input type="text" id="user-input" placeholder="Type a username" name="username" autocomplete="off">
-            <button id="setUsername" type="submit">SET</button>
-        </form>
-        <section id="chatSection">
-            <ul id="messages"></ul>
-            <form id="form">
-                <input id="input" type="text" placeholder="Type a message" name="message" autocomplete="off">
-                <button disabled id="button" type="submit">SEND</button>
+    <main id="wrapper">
+        <div class="login">
+            <form id="user-form">
+                <input type="text" id="user-input" placeholder="Type a username" name="username" autocomplete="off">
+                <button id="setUsername" type="submit">SET</button>
             </form>
-        </section>
+        </div>
+        <div class="chatUI">
+            <section id="leftMenu">
+                <ul id="roomList">
+                    <li>ROOM</li>
+                    <li>ROOM</li>
+                    <li>ROOM</li>
+                    <li>ROOM</li>
+                </ul>
+            </section>
+            <section id="chatSection">
+                <ul id="messages"></ul>
+                <form id="formMsg">
+                    <input id="inputMsg" type="text" placeholder="Type a message" name="message" autocomplete="off">
+                    <button disabled id="aa" type="submit">SEND</button>
+                </form>
+            </section>
+            
+        </div>
+
     </main>
 
     <script type="module" src="./js/index.js"></script>

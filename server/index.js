@@ -35,7 +35,7 @@ await db.execute(`
 // `)
 
 // await db.execute(`
-//     DELETE FROM messages WHERE id < 10
+//     DELETE FROM messages WHERE id < 100
 // `)
 
 io.use((socket, next) => {

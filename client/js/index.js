@@ -3,7 +3,7 @@ import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
 const btnUsername = document.querySelector('#setUsername')
 const formUsername = document.querySelector('#user-form')
 const inputUsername = document.querySelector('#user-input')
-const form = document.querySelector('#form')
+const form = document.querySelector('#formMsg')
 const input = document.querySelector('#input')
 const messages = document.querySelector('#messages')
 const button = document.querySelector('#button')
