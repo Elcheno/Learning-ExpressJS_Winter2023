@@ -1,76 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style/style.css">
-    <link rel="shortcut icon" href="./src/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/x-icon" href="./src/favicon/favicon.ico">
     <title>ChatPrueba</title>
-
-    <script type="module">
-        import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
-
-        const btnUsername = document.querySelector('#setUsername')
-        const formUsername = document.querySelector('#user-form')
-        const inputUsername = document.querySelector('#user-input')
-        const form = document.querySelector('#form')
-        const input = document.querySelector('#input')
-        const messages = document.querySelector('#messages')
-        const button = document.querySelector('#button')
-
-        let socket = io({
-            auth: {
-                    username: 'user',
-                    serverOffset: 0
-                }
-        });
-        let username = null
-
-        formUsername.addEventListener('submit', (e) => {
-            e.preventDefault()
-
-            username = inputUsername.value.trim()
-
-            socket = io({
-                auth: {
-                    username: username,
-                    serverOffset: 0
-                }
-            });
-            btnUsername.disabled = true
-            inputUsername.disabled = true
-            button.disabled = false
-        })
-
-
-
-        socket.on('chat message', (user, message, serverOffset) => {
-            const item = `<li>${user}: ${message}</li>`
-            messages.insertAdjacentHTML('beforeend', item)
-            socket.auth.serverOffset = serverOffset
-        })
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault()
-
-            if(input.value && username != null && socket != null){
-                socket.emit('chat message', 
-                {
-                    user:username,
-                    message:input.value.trim()
-                })
-                input.value = ''
-            }
-        })
-    </script>
 </head>
+
 <body>
     <main>
         <form id="user-form">
             <input type="text" id="user-input" placeholder="Type a username" name="username" autocomplete="off">
             <button id="setUsername" type="submit">SET</button>
         </form>
-        <section>
+        <section id="chatSection">
             <ul id="messages"></ul>
             <form id="form">
                 <input id="input" type="text" placeholder="Type a message" name="message" autocomplete="off">
@@ -78,5 +23,8 @@
             </form>
         </section>
     </main>
+
+    <script type="module" src="./js/index.js"></script>
 </body>
+
 </html>

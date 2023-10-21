@@ -14,6 +14,8 @@ const server = createServer(app)
 const io = new Server(server, {
   connectionStateRecovery: {}
 })
+const userList = []
+const flag =false
 
 const db = createClient({
   url:'libsql://deciding-warbound-elcheno.turso.io',
@@ -37,38 +39,56 @@ await db.execute(`
 // `)
 
 io.use((socket, next) => {
-  // console.log(socket.handshake.headers)
-  console.log(socket.handshake.auth.username)
-  // AQUI COMPROBARIA LA CONEXION DEL CLIENTE MEDIATE EL USERNAME DEL USUARIO
-  // CREAR UNA LISTA DE USUARIOS EN LA QUE METER EL USUARIO ACTUAL
-  next() //PERMITO LA CONEXION CON EL CLIENTE
+  next()
 })
 
 io.on('connection', async (socket) => {
   console.log('a user has connected!')
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
+    const username = socket.handshake.auth.username
+    if(userList.includes(username)){
+      userList.splice(userList.indexOf(username), 1)
+      console.log(userList)
+    }
     console.log('a user has disconnected!')
     // AQUI DEBERIA DE SACAR EL USUARIO DE LA LISTA DE USUARIOS DEBIDO A LA DESCONEXION DEL CLIENTE
   })
 
   socket.on('chat message', async (msg) => {
-    let result
-    console.log(msg)
-    try{
-      result = await db.execute({
-        sql: 'INSERT INTO messages (user, content) VALUES (:user, :content)',
-        args:{ 
-          user: socket.handshake.auth.username ?? 'notUser',
-          content: msg.message
-        }
+    let username = socket.handshake.auth.username
+    if(username != null && username != 'anonymous' && username != ''){
+      let result
+      try{
+        result = await db.execute({
+          sql: 'INSERT INTO messages (user, content) VALUES (:user, :content)',
+          args:{ 
+            user: username ?? 'anonymous',
+            content: msg.message
+          }
+        })
+      }catch(e){
+        console.error(e)
+        return
+      }
+  
+      io.emit('chat message', {
+        username: socket.handshake.auth.username, 
+        message: msg.message, 
+        serverOffset: result.lastInsertRowid.toString()
       })
-    }catch(e){
-      console.error(e)
-      return
     }
 
-    io.emit('chat message', msg.user, msg.message, result.lastInsertRowid.toString())
+  })
+
+  socket.on('tryLogin', (username) => {
+    if(username != 'anonymous' && username != null && username != '' && !userList.includes(username)){
+      userList.push(username)
+      socket.emit('loginSuccess', username)
+      socket.handshake.auth.username = username
+    }else{
+      socket.emit('errorToLogin', username)
+    }
   })
 
   if(!socket.recovered){
@@ -81,8 +101,11 @@ io.on('connection', async (socket) => {
       })
   
       result.rows.forEach(row => {
-        console.log(row.content)
-        socket.emit('chat message', row.user, row.content, row.id.toString())
+        socket.emit('chat message', {
+          username: row.user, 
+          message: row.content, 
+          serverOffset: row.id.toString()
+        })
       })
     }catch(e){
       console.error(e)
@@ -99,6 +122,14 @@ app.get('/', (req, res) => {
 
 app.get('/style/style.css', (req, res) => {
   res.sendFile(process.cwd() + '/client/style/style.css')
+})
+
+app.get('/js/index.js', (req, res) => {
+  res.sendFile(process.cwd() + '/client/js/index.js')
+})
+
+app.get('/src/favicon/favicon.ico', (req, res) => {
+  res.sendFile(process.cwd() + '/client/src/favicon/favicon.ico')
 })
 
 server.listen(port, () => {
