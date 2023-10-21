@@ -52,7 +52,6 @@ io.on('connection', async (socket) => {
       console.log(userList)
     }
     console.log('a user has disconnected!')
-    // AQUI DEBERIA DE SACAR EL USUARIO DE LA LISTA DE USUARIOS DEBIDO A LA DESCONEXION DEL CLIENTE
   })
 
   socket.on('chat message', async (msg) => {
