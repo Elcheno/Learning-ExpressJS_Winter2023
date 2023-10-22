@@ -4,9 +4,9 @@ const btnUsername = document.querySelector('#setUsername')
 const formUsername = document.querySelector('#user-form')
 const inputUsername = document.querySelector('#user-input')
 const form = document.querySelector('#formMsg')
-const input = document.querySelector('#input')
+const input = document.querySelector('#inputMsg')
 const messages = document.querySelector('#messages')
-const button = document.querySelector('#button')
+const button = document.querySelector('#buttonMsg')
 const chatSection = document.querySelector('#chatSection')
 
 let socket = io({

@@ -21,32 +21,98 @@ body{
 
 .chatUI{
     display: grid;
-    grid-template-columns: 30vw 70vw;
-    /* grid-template-rows: min-content; */
+    grid-template-columns: 20vw 80vw;
 }
 
 #leftMenu{
-    background-color: grey;
+    background-color: rgb(127, 158, 168);
 }
 
 #roomList{
     list-style-type: none;
+    
 }
 
 #chatSection{
     background-color: grey;
     display: grid;
-    grid-template-rows: 90% 10%;
+    grid-template-rows: 10% 80% 10%;
+    background-color: lightblue;
+    box-sizing: border-box;
+    padding: 20px;
 }
 
 #messages{
     background-color: white;
-    border-radius: 50px;
+    border-radius: 20px;
     padding: 0;
     margin: 0;
+    list-style-type: none;
+    color: black;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: scroll;
+}
+
+#messages::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+/* Estilos barra (thumb) de scroll */
+#messages::-webkit-scrollbar-thumb {
+background: #ccc;
+border-radius: 4px;
+}
+
+#messages::-webkit-scrollbar-thumb:active {
+background-color: #999999;
+}
+
+#messages::-webkit-scrollbar-thumb:hover {
+background: #b3b3b3;
+box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilos track de scroll */
+#messages::-webkit-scrollbar-track {
+background: #e1e1e1;
+border-radius: 4px;
+}
+
+#messages::-webkit-scrollbar-track:hover, 
+#messages::-webkit-scrollbar-track:active {
+background: #d4d4d4;
+}
+
+#messages > li:nth-child(odd){
+    background-color: lightblue;
+    border-radius: 20px;
+}
+
+#messages > li{
+    padding: 5px;
 }
 
 #formMsg{
      display:grid;
      grid-template-columns: 85% 15%;
 }
+
+#inputMsg, #buttonMsg{
+    height: 50%;
+    align-self: center;
+}
+
+#inputMsg{
+    width: 100%;
+    border-radius: 50px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#buttonMsg{
+    justify-self: end;
+    width: 85%;
+    border-radius: 7px;
+}
+
