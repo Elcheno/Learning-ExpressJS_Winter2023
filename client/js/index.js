@@ -1,13 +1,9 @@
 import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
 
-const btnUsername = document.querySelector('#setUsername')
-const formUsername = document.querySelector('#user-form')
-const inputUsername = document.querySelector('#user-input')
 const form = document.querySelector('#formMsg')
 const input = document.querySelector('#inputMsg')
 const messages = document.querySelector('#messages')
 const button = document.querySelector('#buttonMsg')
-const chatSection = document.querySelector('#chatSection')
 
 let socket = io({
     auth: {
@@ -15,36 +11,57 @@ let socket = io({
         serverOffset: 0
     }
 });
+
 let username = null
 
-// socket.on('connect', () => {
-//     console.log(socket.id)
-// })
+const tryLogin = () => {
+    Swal.fire({
+        title:'Login',
+        input:'text',
+        inputPlaceholder:'Type your username',
+        inputAttributes: {
+            autocapitalize: 'off'
+        },
+        confirmButtonText: 'SEND',
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+        inputValidator: (value) => {
 
-formUsername.addEventListener('submit', (e) => {
-    e.preventDefault()
-    if(inputUsername.value.trim()){
-        username = inputUsername.value.trim()
+            if (!value) {
+                return 'You need type a username!'
+            }else{
+                socket.auth.username = value
+                socket.emit('tryLogin', value)
+            }
 
-        // socket.disconnect()
-        
-        socket.auth.username = username
-        console.log(socket.auth.username)
+        },
+        preConfirm: async () => {
+            return new Promise((resolve) => {
+                socket.on('errorToLogin', (response) => {
+                    console.log(`Error to login with ${response}`)
+                    Swal.showValidationMessage('The user name is in use')
+                    resolve(undefined)
+                })
+    
+                socket.on('loginSuccess', (response) => {
+                    console.log(`Login success with username: ${response}`)
+                    resolve(response)
+                })
+            })
+        },        
+    }).then((response) => {
+        if(response.value){
+            username = response.value;
+            button.disabled = false
+            console.log(username)
+        }else{
+            throw new Error('Login error')
+        }
+    })
+}
 
-        socket.emit('tryLogin', username)
-    }
-})
-
-socket.on('loginSuccess', (username) => {
-    console.log(`Login success with username: ${username}`)
-    btnUsername.disabled = true
-    inputUsername.disabled = true
-    button.disabled = false
-    chatSection.style.filter = 'none'
-})
-
-socket.on('errorToLogin', (username) => {
-    console.log(`Error to login with ${username}`)
+socket.on('connect', () => {
+   tryLogin()
 })
 
 socket.on('chat message', (msg) => {

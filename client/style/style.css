@@ -16,7 +16,7 @@ body{
     width: 100vw;
     height: 100vh;
     display: grid;
-    grid-template-rows: 10vh 90vh;
+    grid-template-rows: 100vh;
 }
 
 .chatUI{
@@ -40,25 +40,25 @@ body{
     background-color: lightblue;
     box-sizing: border-box;
     padding: 20px;
+    overflow-y: hidden;
 }
 
 #messages{
     background-color: white;
     border-radius: 20px;
-    padding: 0;
     margin: 0;
     list-style-type: none;
     color: black;
     padding: 20px;
     box-sizing: border-box;
     overflow-y: scroll;
+    max-height: 100%;
 }
 
 #messages::-webkit-scrollbar {
     width: 8px;
   }
   
-/* Estilos barra (thumb) de scroll */
 #messages::-webkit-scrollbar-thumb {
 background: #ccc;
 border-radius: 4px;
@@ -73,7 +73,6 @@ background: #b3b3b3;
 box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilos track de scroll */
 #messages::-webkit-scrollbar-track {
 background: #e1e1e1;
 border-radius: 4px;
@@ -114,5 +113,29 @@ background: #d4d4d4;
     justify-self: end;
     width: 85%;
     border-radius: 7px;
+    background-color: green;
+    color: white;
+    border: 1px solid green;
 }
 
+#buttonMsg:hover{
+    background-color: darkgreen;
+    border: 1px solid darkgreen;
+    cursor: pointer;
+}
+
+#buttonMsg:active{
+    background-color: rgb(49, 124, 49);
+    border: 1px solid rgb(49, 124, 49);
+
+}
+
+#buttonMsg:disabled{
+    color: rgba(255, 255, 255, 0.425);
+}
+
+#buttonMsg:disabled:hover{
+    background-color: green;
+    border: 1px solid green;
+    cursor:default
+}

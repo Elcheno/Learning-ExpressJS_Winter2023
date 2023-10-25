@@ -80,37 +80,38 @@ io.on('connection', async (socket) => {
 
   })
 
-  socket.on('tryLogin', (username) => {
+  socket.on('tryLogin', async (username) => {
     if(username != 'anonymous' && username != null && username != '' && !userList.includes(username)){
       userList.push(username)
       socket.emit('loginSuccess', username)
       socket.handshake.auth.username = username
+
+      if(!socket.recovered){
+        try{
+          const result = await db.execute({
+            sql: 'SELECT id, user, content FROM messages WHERE id > (:content)',
+            args: {
+              content: socket.handshake.auth.serverOffset ?? 0
+            }
+          })
+      
+          result.rows.forEach(row => {
+            socket.emit('chat message', {
+              username: row.user, 
+              message: row.content, 
+              serverOffset: row.id.toString()
+            })
+          })
+        }catch(e){
+          console.error(e)
+          return
+        }
+      }
+
     }else{
       socket.emit('errorToLogin', username)
     }
   })
-
-  if(!socket.recovered){
-    try{
-      const result = await db.execute({
-        sql: 'SELECT id, user, content FROM messages WHERE id > (:content)',
-        args: {
-          content: socket.handshake.auth.serverOffset ?? 0
-        }
-      })
-  
-      result.rows.forEach(row => {
-        socket.emit('chat message', {
-          username: row.user, 
-          message: row.content, 
-          serverOffset: row.id.toString()
-        })
-      })
-    }catch(e){
-      console.error(e)
-      return
-    }
-  }
 })
 
 app.use(logger('dev'))

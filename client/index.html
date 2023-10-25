@@ -6,17 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style/style.css">
     <link rel="icon" type="image/x-icon" href="./src/favicon/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>ChatPrueba</title>
 </head>
 
 <body>
     <main id="wrapper">
-        <div class="login">
-            <form id="user-form">
-                <input type="text" id="user-input" placeholder="Type a username" name="username" autocomplete="off">
-                <button id="setUsername" type="submit">SET</button>
-            </form>
-        </div>
         <div class="chatUI">
             <section id="leftMenu">
                 <ul id="roomList">
@@ -33,7 +28,7 @@
                 <ul id="messages"></ul>
                 <form id="formMsg">
                     <input id="inputMsg" type="text" placeholder="Type a message" name="message" autocomplete="off">
-                    <button disabled id="buttonMsg" type="submit">SEND</button>
+                    <button id="buttonMsg" type="submit">SEND</button>
                 </form>
             </section>
             
