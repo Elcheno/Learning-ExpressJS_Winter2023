@@ -8,13 +8,7 @@ const roomList = document.querySelector('#roomList')
 const nameRoom = document.querySelector('#nameRoom')
 const sessionName = document.querySelector('#sessionName')
 
-let socket = io({
-    auth: {
-        username: 'anonymous',
-        serverOffset: 0
-    }
-});
-
+let socket = null
 let username = null
 let actualRoom = null
 
@@ -30,14 +24,59 @@ const tryLogin = () => {
         showLoaderOnConfirm: true,
         allowOutsideClick: false,
         inputValidator: (value) => {
-
             if (!value) {
                 return 'You need type a username!'
             }else{
-                socket.auth.username = value
-                socket.emit('tryLogin', value)
-            }
+                socket = io({
+                    auth: {
+                        username: value,
+                        serverOffset: 0
+                    }
+                });
 
+                socket.emit('tryLogin', value)
+
+                // socket.on('connect', () => {
+                // })
+                
+                socket.on('clientConnected', (user) => {
+                    if(username != null){
+                        const item = `<li id=${user}>${user}</li>`
+                        roomList.insertAdjacentHTML('beforeend', item)
+                        document.querySelector(`#${user}`).addEventListener('click', () => {
+                            document.querySelector(`#${user}`).classList.remove('alertNewMsg')
+                            document.querySelectorAll('.message').forEach((msg) => msg.remove())
+                            actualRoom = user
+                            nameRoom.innerHTML = user
+                            socket.emit('getMsgs', user)
+                        })
+                    }
+                })
+                
+                socket.on('clientDisconnected', (user) => {
+                    document.querySelector(`#${user}`).remove()
+                    if(actualRoom == user){
+                        actualRoom = null
+                        nameRoom.innerHTML = ''
+                        document.querySelectorAll('.message').forEach((msg) => msg.remove())
+                    }
+                })
+                
+                socket.on('chat message', (msg) => {
+                    if(msg.username == actualRoom || msg.username == username){
+                        const item = `<li class="message ${msg.username==username?'meMessage':''}">${msg.username}: ${msg.message}</li>`
+                        messages.insertAdjacentHTML('beforeend', item)
+                        socket.auth.serverOffset = msg.serverOffset
+                    }else if(msg.username != actualRoom){
+                        document.querySelector(`#${msg.username}`).classList.add('alertNewMsg')
+                        signal.fire({
+                            icon: 'info',
+                            title: `New message recived to ${msg.username}`
+                          })
+                    }
+                
+                })
+            }
         },
         preConfirm: async () => {
             return new Promise((resolve) => {
@@ -49,6 +88,7 @@ const tryLogin = () => {
     
                 socket.on('loginSuccess', (response) => {
                     console.log(`Login success with username: ${response}`)
+                    username = response
                     resolve(response)
                 })
             })
@@ -56,7 +96,6 @@ const tryLogin = () => {
     }).then((response) => {
         if(response.value){
             socket.username = response.value
-            username = response.value;
             button.disabled = false
             sessionName.innerHTML = username
         }else{
@@ -77,47 +116,7 @@ const signal = Swal.mixin({
     }
 })
 
-socket.on('connect', () => {
-   tryLogin()
-})
-
-socket.on('clientConnected', (user) => {
-    if(username != null){
-        const item = `<li id=${user}>${user}</li>`
-        roomList.insertAdjacentHTML('beforeend', item)
-        document.querySelector(`#${user}`).addEventListener('click', () => {
-            document.querySelector(`#${user}`).classList.remove('alertNewMsg')
-            document.querySelectorAll('.message').forEach((msg) => msg.remove())
-            actualRoom = user
-            nameRoom.innerHTML = user
-            socket.emit('getMsgs', user)
-        })
-    }
-})
-
-socket.on('clientDisconnected', (user) => {
-    document.querySelector(`#${user}`).remove()
-    if(actualRoom == user){
-        actualRoom = null
-        nameRoom.innerHTML = ''
-        document.querySelectorAll('.message').forEach((msg) => msg.remove())
-    }
-})
-
-socket.on('chat message', (msg) => {
-    if(msg.username == actualRoom || msg.username == username){
-        const item = `<li class="message">${msg.username}: ${msg.message}</li>`
-        messages.insertAdjacentHTML('beforeend', item)
-        socket.auth.serverOffset = msg.serverOffset
-    }else if(msg.username != actualRoom){
-        document.querySelector(`#${msg.username}`).classList.add('alertNewMsg')
-        signal.fire({
-            icon: 'info',
-            title: `New message recived to ${msg.username}`
-          })
-    }
-
-})
+tryLogin()
 
 form.addEventListener('submit', (event) => {
     event.preventDefault()

@@ -26,6 +26,7 @@ body{
 
 #leftMenu{
     background-color: rgb(127, 158, 168);
+    overflow-y: scroll;
 }
 
 #roomList{
@@ -59,7 +60,7 @@ body{
 }
 
 #messages{
-    background-color: white;
+    background-color: rgb(61, 61, 61);
     border-radius: 20px;
     margin: 0;
     list-style-type: none;
@@ -68,6 +69,9 @@ body{
     box-sizing: border-box;
     overflow-y: scroll;
     max-height: 100%;
+    display: flex;
+    flex-flow: column;
+    row-gap: 0.3em;
 }
 
 #messages::-webkit-scrollbar {
@@ -98,13 +102,14 @@ border-radius: 4px;
 background: #d4d4d4;
 }
 
-#messages > li:nth-child(odd){
-    background-color: lightblue;
+#messages > li{
+    padding: 5px;
+    background-color: #fffffff1;
     border-radius: 20px;
 }
 
-#messages > li{
-    padding: 5px;
+.meMessage{
+    background-color: lightblue!important;
 }
 
 #formMsg{
@@ -124,6 +129,10 @@ background: #d4d4d4;
     box-sizing: border-box;
 }
 
+#inputMsg:focus{
+    outline:0;
+}
+
 #buttonMsg{
     justify-self: end;
     width: 85%;
@@ -131,6 +140,7 @@ background: #d4d4d4;
     background-color: green;
     color: white;
     border: 1px solid green;
+    font-size: 20px;
 }
 
 #buttonMsg:hover{

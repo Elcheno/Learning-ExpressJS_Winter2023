@@ -17,7 +17,7 @@ const io = new Server(server, {
 
 app.use(logger('dev'))
 
-const userList = []
+const userList = new Map()
 
 const db = createClient({
   url:'libsql://deciding-warbound-elcheno.turso.io',
@@ -46,31 +46,18 @@ io.use((socket, next) => {
 })
 
 io.on('connection', async (socket) => {
+  console.log('Usuario conectado')
 
   socket.on('disconnect', (reason) => {
-    const conn = {
-      username: socket.username,
-      socketId: socket.id
-    }
-      userList.splice(userList.indexOf(conn), 1)
+      userList.delete(socket.username)
       socket.broadcast.emit('clientDisconnected', socket.username)
+      console.log('Usuario desconectado')
+
   })
 
-  const loadClients = () => {
-    userList.map((user) => {
-      if(user.username != socket.username)socket.emit('clientConnected', user.username)
-    })
-  }
-
   socket.on('chat message', async ({ message, addressed}) => {
-    console.log(addressed)
     let username = socket.username
-    const addressedId = userList.map((user) => {
-      if(user.username == addressed){
-        return user.socketId
-      }
-    })
-
+    const addressedId = userList.get(addressed).socketId
 
     if(username != null || username != 'anonymous' || username != '' || addressedId){
       let result
@@ -126,16 +113,14 @@ io.on('connection', async (socket) => {
   })
 
   socket.on('tryLogin', async (username) => {
-    if(username != 'anonymous' && username != null && username != '' && !userList.includes(username)){
-      userList.push({
-        username: username,
-        socketId: socket.id
-      })
+    if(username != null && username != '' && !userList.has(username)){
+      userList.set(username, {username:username, socketId:socket.id})
       socket.emit('loginSuccess', username)
-      socket.handshake.auth.username = username
       socket.username = username
 
-      loadClients()
+      userList.forEach((user) => {
+        if(user.socketId != socket.id) socket.emit('clientConnected', user.username)
+      })
       socket.broadcast.emit('clientConnected', socket.username)
 
     }else{
