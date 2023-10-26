@@ -14,21 +14,15 @@ const server = createServer(app)
 const io = new Server(server, {
   connectionStateRecovery: {}
 })
+
+app.use(logger('dev'))
+
 const userList = []
-const flag =false
 
 const db = createClient({
   url:'libsql://deciding-warbound-elcheno.turso.io',
   authToken: process.env.DB_TOKEN
 })
-
-await db.execute(`
-  CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user TEXT,
-    content TEXT
-  )
-`)
 
 // await db.execute(`
 //   DROP TABLE messages
@@ -38,32 +32,55 @@ await db.execute(`
 //     DELETE FROM messages WHERE id < 100
 // `)
 
+// await db.execute(`
+//   CREATE TABLE IF NOT EXISTS messages (
+//     id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     sender TEXT,
+//     addressed TEXT,
+//     content TEXT
+//   )
+// `)
+
 io.use((socket, next) => {
   next()
 })
 
 io.on('connection', async (socket) => {
-  console.log('a user has connected!')
 
   socket.on('disconnect', (reason) => {
-    const username = socket.handshake.auth.username
-    if(userList.includes(username)){
-      userList.splice(userList.indexOf(username), 1)
-      console.log(userList)
+    const conn = {
+      username: socket.username,
+      socketId: socket.id
     }
-    console.log('a user has disconnected!')
+      userList.splice(userList.indexOf(conn), 1)
+      socket.broadcast.emit('clientDisconnected', socket.username)
   })
 
-  socket.on('chat message', async (msg) => {
-    let username = socket.handshake.auth.username
-    if(username != null && username != 'anonymous' && username != ''){
+  const loadClients = () => {
+    userList.map((user) => {
+      if(user.username != socket.username)socket.emit('clientConnected', user.username)
+    })
+  }
+
+  socket.on('chat message', async ({ message, addressed}) => {
+    console.log(addressed)
+    let username = socket.username
+    const addressedId = userList.map((user) => {
+      if(user.username == addressed){
+        return user.socketId
+      }
+    })
+
+
+    if(username != null || username != 'anonymous' || username != '' || addressedId){
       let result
       try{
         result = await db.execute({
-          sql: 'INSERT INTO messages (user, content) VALUES (:user, :content)',
+          sql: 'INSERT INTO messages (sender, addressed, content) VALUES (:sender, :addressed, :content)',
           args:{ 
-            user: username ?? 'anonymous',
-            content: msg.message
+            sender: username ?? 'anonymous',
+            addressed: addressed,
+            content: message
           }
         })
       }catch(e){
@@ -71,50 +88,62 @@ io.on('connection', async (socket) => {
         return
       }
   
-      io.emit('chat message', {
-        username: socket.handshake.auth.username, 
-        message: msg.message, 
+      io.to(addressedId).emit('chat message', {
+        username: socket.username, 
+        message: message,
+        serverOffset: result.lastInsertRowid.toString()
+      })
+
+      socket.emit('chat message', {
+        username: socket.username, 
+        message: message,
         serverOffset: result.lastInsertRowid.toString()
       })
     }
 
   })
 
+  socket.on('getMsgs', async (user) => {
+    try{
+      const result = await db.execute({
+        sql: 'SELECT id, sender, addressed, content FROM messages WHERE sender LIKE :user1 AND addressed LIKE :user2 OR sender LIKE :user2 AND addressed LIKE :user1',
+        args: {
+          user1: socket.username,
+          user2: user
+        }
+      })
+
+      result.rows.forEach(row => {
+        socket.emit('chat message', {
+          username: row.sender,
+          message: row.content, 
+          serverOffset: row.id.toString()
+        })
+      })
+    }catch(e){
+      console.error(e)
+    }
+  })
+
   socket.on('tryLogin', async (username) => {
     if(username != 'anonymous' && username != null && username != '' && !userList.includes(username)){
-      userList.push(username)
+      userList.push({
+        username: username,
+        socketId: socket.id
+      })
       socket.emit('loginSuccess', username)
       socket.handshake.auth.username = username
+      socket.username = username
 
-      if(!socket.recovered){
-        try{
-          const result = await db.execute({
-            sql: 'SELECT id, user, content FROM messages WHERE id > (:content)',
-            args: {
-              content: socket.handshake.auth.serverOffset ?? 0
-            }
-          })
-      
-          result.rows.forEach(row => {
-            socket.emit('chat message', {
-              username: row.user, 
-              message: row.content, 
-              serverOffset: row.id.toString()
-            })
-          })
-        }catch(e){
-          console.error(e)
-          return
-        }
-      }
+      loadClients()
+      socket.broadcast.emit('clientConnected', socket.username)
 
     }else{
       socket.emit('errorToLogin', username)
     }
   })
-})
 
-app.use(logger('dev'))
+})
 
 app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/client/index.html')
